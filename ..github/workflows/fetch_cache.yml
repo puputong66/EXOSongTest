@@ -1,0 +1,33 @@
+name: 每日定時更新歌詞快取
+
+on:
+  schedule:
+    # 每天台灣時間 中午 12:00 和 晚上 24:00 自動執行
+    - cron: '0 4,16 * * *'
+  workflow_dispatch: # 讓你可以手動點擊更新
+
+permissions:
+  contents: write
+
+# 🌟 核心修正：在這裡加上環境變數，直接強行對齊 6/16 即將上線的 Node.js 24 新規定！
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  update-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 檢查專案程式碼
+        uses: actions/checkout@v4
+
+      - name: 向 Google Apps Script 抓取最新歌詞與公告
+        run: |
+          # ⚠️ 記得這裡要換成你自己的 Google Apps Script API 網址喔！
+          curl -L "https://script.google.com/macros/s/AKfycbypBhIU9UUiUtjHUW6sS4whG0AmpuzpFeVLGRJ02T85bf_ZSNkJCsAaRaX3G5q3yKqh/exec" -o data.json
+
+      - name: 檢查資料是否有變動並自動推送到網站
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add data.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 自動更新最新歌詞與公告快取" && git push)
