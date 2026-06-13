@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EXO 應援小工具</title>
+    <style>
+        /* 質感黑化底色，防拷貝防選取 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; padding: 0; background-color: #121212; color: #ffffff; 
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        /* 區塊 1: 頂部固定單列選單區 (刪除標題，合併為單列) */
+        .top-navbar {
+            background-color: #1a1a1a; padding: 12px; box-sizing: border-box;
+            border-bottom: 1px solid #282828; display: flex; align-items: center; gap: 8px;
+        }
+        
+        /* 依比例 3 : 2 : 0.5 分配寬度 */
+        select {
+            flex: 3; padding: 10px 6px; font-size: 14px; border-radius: 6px;
+            background-color: #252525; color: #fff; border: 1px solid #383838; box-sizing: border-box;
+            min-width: 0; /* 防止內容過長撐開 */
+        }
+        .search-input {
+            flex: 2; padding: 10px; font-size: 14px; border-radius: 6px;
+            background-color: #252525; color: #fff; border: 1px solid #383838; box-sizing: border-box;
+            min-width: 0;
+        }
+        .notice-btn {
+            flex: 0.5; background-color: #333333; color: #b3b3b3; border: none; border-radius: 6px;
+            padding: 10px 0; font-size: 14px; cursor: pointer; text-align: center; box-sizing: border-box;
+            white-space: nowrap;
+        }
+        .notice-btn:active { background-color: #444; }
+
+        /* 區塊 2: YouTube 影片區 */
+        .video-section {
+            padding: 4px 12px 4px 12px; box-sizing: border-box; background-color: #121212;
+        }
+        .video-container { 
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; 
+            border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.6); background: #000;
+        }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        /* 區塊 3: 下方歌詞獨立滾動區 */
+        .lyrics-section {
+            flex: 1; overflow-y: auto; padding: 6px 14px 20px 14px; box-sizing: border-box;
+            background: linear-gradient(to bottom, #151515, #121212);
+        }
+        .line { margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #1c1c1c; text-align: left; }
+        .kr { font-size: 14px; color: #aaaaaa; line-height: 1.4; }
+        .pron { font-size: 18px; color: #00ffcc; font-weight: bold; margin-top: 4px; letter-spacing: 0.3px; }
+        .loading { font-size: 16px; color: #777; text-align: center; margin-top: 60px; }
+
+        /* 公告彈出視窗 */
+        .modal {
+            display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: #222; margin: 0 25px; padding: 20px; border-radius: 12px;
+            border: 1px solid #333; text-align: left; max-width: 400px; width: 100%;
+        }
+        .modal-title { font-size: 16px; font-weight: bold; color: #00ffcc; margin-bottom: 10px; }
+        .modal-text { font-size: 14px; color: #e0e0e0; line-height: 1.5; white-space: pre-wrap; margin-bottom: 15px; }
+        .modal-close {
+            background-color: #333; color: #fff; border: none; border-radius: 6px;
+            padding: 8px 0; width: 100%; font-size: 14px; font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <select id="songSelector" onchange="displaySongLyrics()" style="display:none;"></select>
+        <input type="text" id="songSearch" class="search-input" placeholder="🔍 搜尋..." oninput="filterSongs()">
+        <button class="notice-btn" onclick="openModal()">📢</button>
+    </div>
+
+    <div class="video-section" id="playerContainer" style="display:none;">
+        <div class="video-container">
+            <iframe id="youtubePlayer" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="lyrics-section" id="lyricsBox">
+        <div class="loading" id="statusMessage">正在同步資料庫歌詞，請稍候...</div>
+    </div>
+
+    <div id="noticeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">📢 應援最新公告</div>
+            <div id="announcementBody" class="modal-text">讀取中...</div>
+            <button class="modal-close" onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ 這裡維持引入你們的 data.json
+        var allSongsData = [];
+
+        window.onload = function() {
+            fetch('./data.json')
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    allSongsData = result.songs;
+                    document.getElementById("announcementBody").innerText = result.announcement;
+                    
+                    if (!allSongsData || allSongsData.length === 0) {
+                        document.getElementById("statusMessage").innerText = "資料庫裡好像沒有歌曲喔！";
+                        return;
+                    }
+                    initDropdown(allSongsData);
+                })
+                .catch(function(err) {
+                    document.getElementById("statusMessage").innerText = "讀取資料庫失敗。";
+                });
+        };
+
+        // 初始化選單
+        function initDropdown(songsToDisplay) {
+            var selector = document.getElementById("songSelector");
+            selector.innerHTML = "";
+            for (var i = 0; i < allSongsData.length; i++) {
+                var song = allSongsData[i];
+                if (songsToDisplay.indexOf(song) !== -1) {
+                    var opt = document.createElement("option");
+                    opt.value = i; opt.innerText = song.name; selector.appendChild(opt);
+                }
+            }
+            selector.style.display = "block";
+            document.getElementById("playerContainer").style.display = "block";
+            if (selector.options.length > 0) { displaySongLyrics(); } 
+            else { document.getElementById("lyricsBox").innerHTML = '<div class="loading">找不到相符的歌曲。</div>'; document.getElementById("youtubePlayer").src = ""; }
+        }
+
+        // 搜尋歌名功能
+        function filterSongs() {
+            var keyword = document.getElementById("songSearch").value.toLowerCase().trim();
+            if (keyword === "") { initDropdown(allSongsData); return; }
+            var filtered = [];
+            for (var i = 0; i < allSongsData.length; i++) {
+                if (allSongsData[i].name.toLowerCase().indexOf(keyword) !== -1) { filtered.push(allSongsData[i]); }
+            }
+            initDropdown(filtered);
+        }
+
+        // 切換歌曲與歌詞
+        function displaySongLyrics() {
+            var selectedIndex = document.getElementById("songSelector").value;
+            var song = allSongsData[selectedIndex];
+            document.getElementById("youtubePlayer").src = "https://www.youtube.com/embed/" + song.youtubeId;
+            var lyricsBox = document.getElementById("lyricsBox");
+            lyricsBox.innerHTML = ""; 
+            if (!song.lyrics || song.lyrics.length === 0) { lyricsBox.innerHTML = '<div class="loading">這首歌還沒建立歌詞內容。</div>'; return; }
+            for (var j = 0; j < song.lyrics.length; j++) {
+                var item = song.lyrics[j];
+                var lineDiv = document.createElement("div");
+                lineDiv.className = "line";
+                lineDiv.innerHTML = '<div class="kr">' + item.kr + '</div><div class="pron">' + item.pron + '</div>';
+                lyricsBox.appendChild(lineDiv);
+            }
+            lyricsBox.scrollTop = 0;
+        }
+
+        function openModal() { document.getElementById("noticeModal").style.display = "flex"; }
+        function closeModal() { document.getElementById("noticeModal").style.display = "none"; }
+    </script>
+</body>
+</html>
