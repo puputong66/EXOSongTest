@@ -15,27 +15,34 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
-        /* 區塊 1: 頂部固定單列選單區 (刪除標題，合併為單列) */
+  /* 區塊 1: 頂部固定雙層選單區 */
         .top-navbar {
             background-color: #1a1a1a; padding: 12px; box-sizing: border-box;
-            border-bottom: 1px solid #282828; display: flex; align-items: center; gap: 8px;
+            border-bottom: 1px solid #282828; display: flex; flex-direction: column;
         }
         
-        /* 依比例 3 : 2 : 0.5 分配寬度 */
+        /* 雙層列容器 */
+        .navbar-row {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+        }
+        
+        /* 讓下拉選單在第二行直接吃滿 100% 寬度 */
         select {
-            flex: 3; padding: 10px 6px; font-size: 14px; border-radius: 6px;
+            width: 100%; padding: 10px; font-size: 14px; border-radius: 6px;
             background-color: #252525; color: #fff; border: 1px solid #383838; box-sizing: border-box;
-            min-width: 0; /* 防止內容過長撐開 */
         }
+        
+        /* 第一行左邊的搜尋框：佔滿剩下的所有空間 */
         .search-input {
-            flex: 2; padding: 10px; font-size: 14px; border-radius: 6px;
+            flex: 1; padding: 10px; font-size: 14px; border-radius: 6px;
             background-color: #252525; color: #fff; border: 1px solid #383838; box-sizing: border-box;
-            min-width: 0;
         }
+        
+        /* 第一行右邊的公告按鈕：固定寬度，不被擠壓 */
         .notice-btn {
-            flex: 0.5; background-color: #333333; color: #b3b3b3; border: none; border-radius: 6px;
+            width: 45px; background-color: #333333; color: #b3b3b3; border: none; border-radius: 6px;
             padding: 10px 0; font-size: 14px; cursor: pointer; text-align: center; box-sizing: border-box;
-            white-space: nowrap;
+            white-space: nowrap; flex-shrink: 0;
         }
         .notice-btn:active { background-color: #444; }
 
@@ -113,10 +120,14 @@
 </head>
 <body>
     
-    <div class="top-navbar">
-        <select id="songSelector" onchange="displaySongLyrics()" style="display:none;"></select>
-        <input type="text" id="songSearch" class="search-input" placeholder="輸入關鍵字(歌名/歌詞/標題)" oninput="filterSongs()">
-        <button class="notice-btn" onclick="openModal()">📢</button>
+<div class="top-navbar">
+        <div class="navbar-row">
+            <input type="text" id="songSearch" class="search-input" placeholder="輸入關鍵字(歌名/歌詞/標題)" oninput="filterSongs()">
+            <button class="notice-btn" onclick="openModal()">📢</button>
+        </div>
+        <div class="navbar-row" style="margin-top: 8px;">
+            <select id="songSelector" onchange="displaySongLyrics()" style="display:none;"></select>
+        </div>
     </div>
 
     <!-- ⚡ 核心挖槽：在此處插入這行，用來裝即時跳出來的搜尋結果 -->
