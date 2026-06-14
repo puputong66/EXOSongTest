@@ -167,8 +167,7 @@
                     document.getElementById("statusMessage").innerText = "讀取資料庫失敗。";
                 });
         };
-
-        // 初始化選單
+// 1. 初始化選單（微調版：移除自動切換第一首歌的干擾，全權交給搜尋列表控制）
         function initDropdown(songsToDisplay) {
             var selector = document.getElementById("songSelector");
             selector.innerHTML = "";
@@ -181,21 +180,95 @@
             }
             selector.style.display = "block";
             document.getElementById("playerContainer").style.display = "block";
-            if (selector.options.length > 0) { displaySongLyrics(); } 
-            else { document.getElementById("lyricsBox").innerHTML = '<div class="loading">找不到相符的歌曲。</div>'; document.getElementById("youtubePlayer").src = ""; }
         }
 
-        // 搜尋歌名功能
+        // 2. ⚡ 全新進化：權重分流即時搜尋列表（歌名優先 ＋ 歌詞提示）
         function filterSongs() {
             var keyword = document.getElementById("songSearch").value.toLowerCase().trim();
-            if (keyword === "") { initDropdown(allSongsData); return; }
-            var filtered = [];
-            for (var i = 0; i < allSongsData.length; i++) {
-                if (allSongsData[i].name.toLowerCase().indexOf(keyword) !== -1) { filtered.push(allSongsData[i]); }
+            var searchList = document.getElementById("searchList");
+            
+            // 如果沒打字，隱藏清單，並還原成原本顯示全部歌曲的狀態
+            if (keyword === "") { 
+                searchList.style.display = "none"; 
+                searchList.innerHTML = "";
+                initDropdown(allSongsData); 
+                return; 
             }
-            initDropdown(filtered);
+            
+            searchList.innerHTML = ""; // 先清空上一次的搜尋紀錄
+            
+            // 準備兩個排隊桶子
+            var titleMatches = []; // A 隊：歌名符合 (優先權最高)
+            var lyricMatches = []; // B 隊：歌詞符合 (排在後面)
+            
+            // 開始巡邏所有歌曲進行權重分配
+            for (var i = 0; i < allSongsData.length; i++) {
+                var song = allSongsData[i];
+                
+                // 狀況 A：歌名直接命中關鍵字
+                if (song.name.toLowerCase().indexOf(keyword) !== -1) {
+                    titleMatches.push({ index: i, song: song, type: 'title' });
+                    continue; // 歌名中了就直接進 A 隊，跳過後面的歌詞比對
+                }
+                
+                // 狀況 B：歌名沒中，深入檢查歌詞內容（支援韓文、拼音空耳）
+                if (song.lyrics) {
+                    var isLyricMatch = false;
+                    for (var j = 0; j < song.lyrics.length; j++) {
+                        var line = song.lyrics[j];
+                        if ((line.kr && line.kr.toLowerCase().indexOf(keyword) !== -1) || 
+                            (line.pron && line.pron.toLowerCase().indexOf(keyword) !== -1)) {
+                            isLyricMatch = true; 
+                            break; // 只要有一行對上就收工
+                        }
+                    }
+                    if (isLyricMatch) {
+                        lyricMatches.push({ index: i, song: song, type: 'lyric' });
+                    }
+                }
+            }
+            
+            // 完美合併：歌名隊排前面，歌詞隊排後面
+            var finalResults = titleMatches.concat(lyricMatches);
+            
+            // 同步更新隱藏的下拉選單
+            var filteredSongs = finalResults.map(function(item) { return item.song; });
+            initDropdown(filteredSongs);
+            
+            // 開始在畫面上渲染搜尋結果列表
+            if (finalResults.length > 0) {
+                for (var k = 0; k < finalResults.length; k++) {
+                    var result = finalResults[k];
+                    var itemDiv = document.createElement("div");
+                    itemDiv.className = "search-item";
+                    
+                    if (result.type === 'title') {
+                        // 歌名符合：單純乾淨地顯示原本的歌名
+                        itemDiv.innerText = result.song.name;
+                    } else {
+                        // 歌詞符合：顯示原歌名，並在右邊貼上精緻的高級灰提示標籤
+                        itemDiv.innerHTML = '<span>' + result.song.name + '</span><span class="search-lyric-tip">🎤 歌詞包含 "' + keyword + '"</span>';
+                    }
+                    
+                    // 利用閉包（Closure）精準鎖定每一首歌在資料庫中的真實 index
+                    (function(actualIndex) {
+                        itemDiv.onclick = function() {
+                            document.getElementById("songSelector").value = actualIndex;
+                            displaySongLyrics();     // 切換 YouTube 與歌詞
+                            searchList.style.display = "none"; // 點完收起搜尋抽屜
+                            document.getElementById("songSearch").value = ""; // 清空輸入框
+                        };
+                    })(result.index);
+                    
+                    searchList.appendChild(itemDiv);
+                }
+                searchList.style.display = "block"; // 像抽屜一樣展開列表
+            } else {
+                // 如果全世界都找不到這首歌
+                searchList.innerHTML = '<div class="search-item" style="color:#777; pointer-events:none; justify-content:center;">找不到這首歌 QQ</div>';
+                searchList.style.display = "block";
+            }
         }
-
         // 切換歌曲與歌詞
         function displaySongLyrics() {
             var selectedIndex = document.getElementById("songSelector").value;
