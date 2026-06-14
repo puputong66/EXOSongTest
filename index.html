@@ -115,7 +115,7 @@
     
     <div class="top-navbar">
         <select id="songSelector" onchange="displaySongLyrics()" style="display:none;"></select>
-        <input type="text" id="songSearch" class="search-input" placeholder="🔍 搜尋..." oninput="filterSongs()">
+        <input type="text" id="songSearch" class="search-input" placeholder="輸入關鍵字(歌名/歌詞/標題)" oninput="filterSongs()">
         <button class="notice-btn" onclick="openModal()">📢</button>
     </div>
 
@@ -156,6 +156,9 @@
                         return;
                     }
                     initDropdown(allSongsData);
+                    // ⚡ 救命臨門一腳：網頁剛打開時，強制主動把第一首歌的 YouTube 和歌詞渲染出來！
+                    if (allSongsData.length > 0) { displaySongLyrics(); }
+                })
                 })
                 .catch(function(err) {
                     document.getElementById("statusMessage").innerText = "讀取資料庫失敗。";
