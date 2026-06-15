@@ -206,7 +206,7 @@
                 });
         };
 
-        // 1. 初始化選單
+// 1. 初始化選單（修復版：確保大門打開，並鎖定第一首歌）
         function initDropdown(songsToDisplay) {
             var selector = document.getElementById("songSelector");
             selector.innerHTML = "";
@@ -217,7 +217,10 @@
                     opt.value = i; opt.innerText = song.name; selector.appendChild(opt);
                 }
             }
+            // ⚡ 解鎖關鍵：強制把隱藏的選單大門打開，並把指標停在第一首歌 (0)
             selector.style.display = "block";
+            selector.value = "0"; 
+            
             document.getElementById("playerContainer").style.display = "block";
         }
 
