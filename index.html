@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>老師沒有說不能Open Book</title>
-    <!-- ⚡ 網站專屬圖片縮圖：href 填入妳剛剛上傳的圖片檔名 -->
-<link rel="icon" type="image/jpeg" href="./weareone.jpg">
+    <link rel="icon" type="image/jpeg" href="./weareone.jpg">
     <style>
         /* 質感黑化底色，防拷貝防選取 */
         body { 
@@ -15,7 +14,7 @@
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
-  /* 區塊 1: 頂部固定雙層選單區 */
+        /* 區塊 1: 頂部固定雙層選單區 */
         .top-navbar {
             background-color: #1a1a1a; padding: 12px; box-sizing: border-box;
             border-bottom: 1px solid #282828; display: flex; flex-direction: column;
@@ -56,6 +55,36 @@
         }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
+        /* 🔮 Phase 2: 延伸練習自訂超連結樣式 */
+        .practice-link-container {
+            text-align: center;
+            padding: 10px 12px;
+            box-sizing: border-box;
+        }
+
+        .practice-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #F4DAE4; /* 妳指定的優雅粉色 */
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none; /* 去除底線 */
+            background-color: #222222;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #333333;
+            text-shadow: 0 0 4px rgba(244, 218, 228, 0.4);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+
+        /* 手機點擊時的瞬間微亮回饋 */
+        .practice-link:active {
+            background-color: #F4DAE4;
+            color: #121212;
+        }
+
         /* 區塊 3: 下方歌詞獨立滾動區 */
         .lyrics-section {
             flex: 1; overflow-y: auto; padding: 6px 14px 150px 14px; box-sizing: border-box;
@@ -65,42 +94,44 @@
         .kr { font-size: 14px; color: #aaaaaa; line-height: 1.4; }
         .pron { font-size: 18px; color: #00ffcc; font-weight: bold; margin-top: 4px; letter-spacing: 0.3px; }
         .loading { font-size: 16px; color: #777; text-align: center; margin-top: 60px; }
-.search-results-list {
-    display: none; /* 預設隱藏，有打字才出現 */
-    background-color: #1a1a1a;
-    border-bottom: 1px solid #282828;
-    max-height: 250px; /* 限制最高高度，多出的話可以滑動 */
-    overflow-y: auto;
-    padding: 6px 12px;
-    box-sizing: border-box;
-    text-align: left; /* 確保文字靠左對齊，方便現場閱讀 */
-}
 
-.search-item {
-    padding: 14px 8px; /* 現場手指點擊的黃金舒適高度 */
-    font-size: 15px;
-    color: #e0e0e0;
-    border-bottom: 1px solid #252525;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        .search-results-list {
+            display: none; /* 預設隱藏，有打字才出現 */
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #282828;
+            max-height: 250px; /* 限制最高高度，多出的話可以滑動 */
+            overflow-y: auto;
+            padding: 6px 12px;
+            box-sizing: border-box;
+            text-align: left; /* 確保文字靠左對齊 */
+        }
 
-/* 手機點擊時的瞬間回饋顏色（防誤觸） */
-.search-item:active {
-    background-color: #252525;
-    color: #00ffcc;
-}
+        .search-item {
+            padding: 14px 8px; /* 現場手指點擊的黃金舒適高度 */
+            font-size: 15px;
+            color: #e0e0e0;
+            border-bottom: 1px solid #252525;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.search-lyric-tip {
-    font-size: 12px;
-    color: #888;
-    margin-left: 8px;
-    background: #252525;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
+        /* 手機點擊時的瞬間回饋顏色（防誤觸） */
+        .search-item:active {
+            background-color: #252525;
+            color: #00ffcc;
+        }
+
+        .search-lyric-tip {
+            font-size: 12px;
+            color: #888;
+            margin-left: 8px;
+            background: #252525;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
         /* 公告彈出視窗 */
         .modal {
             display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
@@ -120,7 +151,7 @@
 </head>
 <body>
     
-<div class="top-navbar">
+    <div class="top-navbar">
         <div class="navbar-row">
             <input type="text" id="songSearch" class="search-input" placeholder="輸入關鍵字(歌名/歌詞/標題)" oninput="filterSongs()">
             <button class="notice-btn" onclick="openModal()">📢</button>
@@ -130,7 +161,6 @@
         </div>
     </div>
 
-    <!-- ⚡ 核心挖槽：在此處插入這行，用來裝即時跳出來的搜尋結果 -->
     <div id="searchList" class="search-results-list"></div>
 
     <div class="video-section" id="playerContainer" style="display:none;">
@@ -138,6 +168,8 @@
             <iframe id="youtubePlayer" src="" frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
+
+    <div id="practiceLinkBox" class="practice-link-container" style="display:none;"></div>
 
     <div class="lyrics-section" id="lyricsBox">
         <div class="loading" id="statusMessage">正在同步資料庫歌詞，請稍候...</div>
@@ -152,7 +184,6 @@
     </div>
 
     <script>
-        // ⚠️ 這裡維持引入你們的 data.json
         var allSongsData = [];
 
         window.onload = function() {
@@ -174,7 +205,8 @@
                     document.getElementById("statusMessage").innerText = "讀取資料庫失敗。";
                 });
         };
-// 1. 初始化選單（微調版：移除自動切換第一首歌的干擾，全權交給搜尋列表控制）
+
+        // 1. 初始化選單（確保首頁大門解鎖並錨定第一首歌）
         function initDropdown(songsToDisplay) {
             var selector = document.getElementById("songSelector");
             selector.innerHTML = "";
@@ -186,6 +218,7 @@
                 }
             }
             selector.style.display = "block";
+            selector.value = "0"; // 鎖定在第一首歌
             document.getElementById("playerContainer").style.display = "block";
         }
 
@@ -194,7 +227,6 @@
             var keyword = document.getElementById("songSearch").value.toLowerCase().trim();
             var searchList = document.getElementById("searchList");
             
-            // 如果沒打字，隱藏清單，並還原成原本顯示全部歌曲的狀態
             if (keyword === "") { 
                 searchList.style.display = "none"; 
                 searchList.innerHTML = "";
@@ -202,23 +234,19 @@
                 return; 
             }
             
-            searchList.innerHTML = ""; // 先清空上一次的搜尋紀錄
+            searchList.innerHTML = ""; 
             
-            // 準備兩個排隊桶子
             var titleMatches = []; // A 隊：歌名符合 (優先權最高)
             var lyricMatches = []; // B 隊：歌詞符合 (排在後面)
             
-            // 開始巡邏所有歌曲進行權重分配
             for (var i = 0; i < allSongsData.length; i++) {
                 var song = allSongsData[i];
                 
-                // 狀況 A：歌名直接命中關鍵字
                 if (song.name.toLowerCase().indexOf(keyword) !== -1) {
                     titleMatches.push({ index: i, song: song, type: 'title' });
-                    continue; // 歌名中了就直接進 A 隊，跳過後面的歌詞比對
+                    continue; 
                 }
                 
-                // 狀況 B：歌名沒中，深入檢查歌詞內容（支援韓文、拼音空耳）
                 if (song.lyrics) {
                     var isLyricMatch = false;
                     for (var j = 0; j < song.lyrics.length; j++) {
@@ -226,7 +254,7 @@
                         if ((line.kr && line.kr.toLowerCase().indexOf(keyword) !== -1) || 
                             (line.pron && line.pron.toLowerCase().indexOf(keyword) !== -1)) {
                             isLyricMatch = true; 
-                            break; // 只要有一行對上就收工
+                            break; 
                         }
                     }
                     if (isLyricMatch) {
@@ -235,14 +263,11 @@
                 }
             }
             
-            // 完美合併：歌名隊排前面，歌詞隊排後面
             var finalResults = titleMatches.concat(lyricMatches);
             
-            // 同步更新隱藏的下拉選單
             var filteredSongs = finalResults.map(function(item) { return item.song; });
             initDropdown(filteredSongs);
             
-            // 開始在畫面上渲染搜尋結果列表
             if (finalResults.length > 0) {
                 for (var k = 0; k < finalResults.length; k++) {
                     var result = finalResults[k];
@@ -250,37 +275,59 @@
                     itemDiv.className = "search-item";
                     
                     if (result.type === 'title') {
-                        // 歌名符合：單純乾淨地顯示原本的歌名
                         itemDiv.innerText = result.song.name;
                     } else {
-                        // 歌詞符合：顯示原歌名，並在右邊貼上精緻的高級灰提示標籤
                         itemDiv.innerHTML = '<span>' + result.song.name + '</span><span class="search-lyric-tip">🎤 歌詞包含 "' + keyword + '"</span>';
                     }
                     
-                    // 利用閉包（Closure）精準鎖定每一首歌在資料庫中的真實 index
                     (function(actualIndex) {
                         itemDiv.onclick = function() {
                             document.getElementById("songSelector").value = actualIndex;
-                            displaySongLyrics();     // 切換 YouTube 與歌詞
-                            searchList.style.display = "none"; // 點完收起搜尋抽屜
-                            document.getElementById("songSearch").value = ""; // 清空輸入框
+                            displaySongLyrics();     
+                            searchList.style.display = "none"; 
+                            document.getElementById("songSearch").value = ""; 
                         };
                     })(result.index);
                     
                     searchList.appendChild(itemDiv);
                 }
-                searchList.style.display = "block"; // 像抽屜一樣展開列表
+                searchList.style.display = "block"; 
             } else {
-                // 如果全世界都找不到這首歌
                 searchList.innerHTML = '<div class="search-item" style="color:#777; pointer-events:none; justify-content:center;">找不到這首歌 QQ</div>';
                 searchList.style.display = "block";
             }
         }
-        // 切換歌曲與歌詞
+
+        // 3. ⚡ Phase 2 進化：切換歌曲與歌詞（支援 網址,自訂文字 動態拆解）
         function displaySongLyrics() {
             var selectedIndex = document.getElementById("songSelector").value;
+            if (selectedIndex === "" || allSongsData.length === 0) return;
+            
             var song = allSongsData[selectedIndex];
             document.getElementById("youtubePlayer").src = "https://www.youtube.com/embed/" + song.youtubeId;
+            
+            // 動態處理延伸練習自訂超連結
+            var linkBox = document.getElementById("practiceLinkBox");
+            if (song.practiceUrl && song.practiceUrl.trim() !== "") {
+                var rawUrlData = song.practiceUrl.trim();
+                var finalUrl = rawUrlData;
+                var linkText = "🎓 點我前往這首歌的應援特訓傳送門 🔗"; // 預設罐頭文字
+                
+                // 檢查有沒有打半形逗號
+                if (rawUrlData.indexOf(",") !== -1) {
+                    var parts = rawUrlData.split(",");
+                    finalUrl = parts[0].trim();           // 逗號前半段是網址
+                    linkText = parts[1].trim() || linkText; // 逗號後半段是自訂文字
+                }
+                
+                linkBox.innerHTML = '<a href="' + finalUrl + '" target="_blank" class="practice-link">' + linkText + '</a>';
+                linkBox.style.display = "block"; 
+            } else {
+                linkBox.innerHTML = "";
+                linkBox.style.display = "none";  // 沒填就徹底隱形
+            }
+            
+            // 渲染歌詞
             var lyricsBox = document.getElementById("lyricsBox");
             lyricsBox.innerHTML = ""; 
             if (!song.lyrics || song.lyrics.length === 0) { lyricsBox.innerHTML = '<div class="loading">這首歌還沒建立歌詞內容。</div>'; return; }
@@ -288,7 +335,7 @@
                 var item = song.lyrics[j];
                 var lineDiv = document.createElement("div");
                 lineDiv.className = "line";
-                lineDiv.innerHTML = '<div class="kr">' + item.kr + '</div><div class="pron">' + item.pron + '</div>';
+                lineDiv.innerHTML = '<div class="kr">' + (item.kr || "") + '</div><div class="pron">' + (item.pron || "") + '</div>';
                 lyricsBox.appendChild(lineDiv);
             }
             lyricsBox.scrollTop = 0;
