@@ -302,33 +302,22 @@
         }
 
         function displaySongLyrics() {
-    var selectedIndex = document.getElementById("songSelector").value;
-    var song = allSongsData[selectedIndex];
-    document.getElementById("youtubePlayer").src = "https://www.youtube.com/embed/" + song.youtubeId;
-    var lyricsBox = document.getElementById("lyricsBox");
-    lyricsBox.innerHTML = ""; 
-    
-    if (!song.lyrics || song.lyrics.length === 0) { 
-        lyricsBox.innerHTML = '<div class="loading">這首歌還沒建立歌詞內容。</div>'; 
-        return; 
-    }
-    
-    for (var j = 0; j < song.lyrics.length; j++) {
-        var item = song.lyrics[j];
-        var lineDiv = document.createElement("div");
-        lineDiv.className = "line";
-        
-        // 💡 關鍵修改：先將歌詞中的 <br> 文字，替換成真正的 HTML 換行標籤
-        // 同時做簡單的防禦，把可能危險的 <script> 標籤等過濾掉，但允許 <br>
-        var safeKr = item.kr ? item.kr.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/&lt;br&gt;/gi, "<br>") : "";
-        var safePron = item.pron ? item.pron.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/&lt;br&gt;/gi, "<br>") : "";
-        
-        // 將處理好的安全 HTML 塞入
-        lineDiv.innerHTML = '<div class="kr">' + safeKr + '</div><div class="pron">' + safePron + '</div>';
-        lyricsBox.appendChild(lineDiv);
-    }
-    lyricsBox.scrollTop = 0;
-}
+            var selectedIndex = document.getElementById("songSelector").value;
+            var song = allSongsData[selectedIndex];
+            document.getElementById("youtubePlayer").src = "https://www.youtube.com/embed/" + song.youtubeId;
+            var lyricsBox = document.getElementById("lyricsBox");
+            lyricsBox.innerHTML = ""; 
+            if (!song.lyrics || song.lyrics.length === 0) { lyricsBox.innerHTML = '<div class="loading">這首歌還沒建立歌詞內容。</div>'; return; }
+            for (var j = 0; j < song.lyrics.length; j++) {
+                var item = song.lyrics[j];
+                var lineDiv = document.createElement("div");
+                lineDiv.className = "line";
+                lineDiv.innerHTML = '<div class="kr">' + item.kr + '</div><div class="pron">' + item.pron + '</div>';
+                lyricsBox.appendChild(lineDiv);
+            }
+            lyricsBox.scrollTop = 0;
+        }
+
         function openModal() { document.getElementById("noticeModal").style.display = "flex"; }
         function closeModal() { document.getElementById("noticeModal").style.display = "none"; }
     </script>
