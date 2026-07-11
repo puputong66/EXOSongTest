@@ -45,6 +45,23 @@
         }
         .notice-btn:active { background-color: #444; }
 
+        /* 🌟 新增：應援頁超連結小按鈕 */
+        .cheer-link {
+            background-color: #ff4d6d;   /* 應援色，可自行更換 */
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;        /* 拿掉超連結底線 */
+            white-space: nowrap;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        .cheer-link:active { background-color: #e03e5c; }
+
         /* 區塊 2: YouTube 影片區 */
         .video-section {
             padding: 4px 12px 4px 12px; box-sizing: border-box; background-color: #121212;
@@ -144,6 +161,8 @@
     <div class="top-navbar">
         <div class="navbar-row">
             <input type="text" id="songSearch" class="search-input" placeholder="輸入關鍵字(歌名/歌詞/標題)" oninput="filterSongs()">
+            <!-- 🌟 新增：應援頁超連結按鈕 -->
+            <a href="https://alll-lll-s.com/practice.html" class="cheer-link">應援</a>
             <button class="notice-btn" onclick="openModal()">📢</button>
         </div>
         <div class="navbar-row" style="margin-top: 8px;">
