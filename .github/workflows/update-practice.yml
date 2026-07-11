@@ -19,7 +19,7 @@ jobs:
       - name: 向「練習頁」的 Apps Script 抓取歌詞
         run: |
           # 🌟 換成你新部署拿到的那組 exec 網址
-          curl -L "https://script.google.com/macros/s/新的部署ID/exec" -o data2.json
+          curl -L "https://script.google.com/macros/s/AKfycbxc2MLc2vn7QKm2Dv5tY1XbF3nIyod4xnBk0TQuYxdw6Le0035KfXFZ1OyuCM7o2-td/exec" -o data2.json
       - name: 檢查資料是否有變動並自動推送
         run: |
           git config --local user.email "action@github.com"
