@@ -65,6 +65,12 @@
         .pron { font-size: 18px; color: #00ffcc; font-weight: bold; margin-top: 4px; letter-spacing: 0.3px; }
         .loading { font-size: 16px; color: #777; text-align: center; margin-top: 60px; }
 
+        /* 🌟 新增：空耳裡的【應援詞】突顯樣式 */
+        .cheer {
+            color: #ff4d6d;      /* 應援詞顏色，先給一個亮粉紅，可自行更換 */
+            font-weight: bold;
+        }
+
         .search-results-list {
             display: none; 
             background-color: #1a1a1a;
@@ -216,6 +222,20 @@
             return safeText.replace(replacePattern, '<a href="$1" target="_blank">$1</a>');
         }
 
+        // 🌟 新增：把空耳裡的【應援詞】上色突顯
+        function highlightCheer(text) {
+            if (!text) return "";
+
+            // 先做 HTML 安全處理，避免歌詞裡的特殊字元弄壞畫面
+            var safe = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // 找出【...】，連同全形括號一起包成 .cheer 樣式
+            return safe.replace(/【([^】]*)】/g, '<span class="cheer">【$1】</span>');
+        }
+
         function initDropdown(songsToDisplay) {
             var selector = document.getElementById("songSelector");
             selector.innerHTML = "";
@@ -312,7 +332,8 @@
                 var item = song.lyrics[j];
                 var lineDiv = document.createElement("div");
                 lineDiv.className = "line";
-                lineDiv.innerHTML = '<div class="kr">' + item.kr + '</div><div class="pron">' + item.pron + '</div>';
+                // 🌟 空耳歌詞改用 highlightCheer 處理，讓【應援詞】上色突顯
+                lineDiv.innerHTML = '<div class="kr">' + item.kr + '</div><div class="pron">' + highlightCheer(item.pron) + '</div>';
                 lyricsBox.appendChild(lineDiv);
             }
             lyricsBox.scrollTop = 0;
