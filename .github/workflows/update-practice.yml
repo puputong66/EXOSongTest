@@ -14,16 +14,21 @@ jobs:
     steps:
       - name: 檢查專案程式碼
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
       - name: 向「練習頁」的 Apps Script 抓取歌詞
         run: |
-          # 🌟 換成上一步新部署拿到的那組 exec 網址
+          # 🌟 換成你新部署拿到的那組 exec 網址
           curl -L "https://script.google.com/macros/s/新的部署ID/exec" -o data2.json
-
       - name: 檢查資料是否有變動並自動推送
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
-          git pull --rebase
           git add data2.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 自動更新練習頁歌詞快取" && git push)
+          if git diff --staged --quiet; then
+            echo "沒有變動,不需推送"
+          else
+            git commit -m "🤖 自動更新練習頁歌詞快取"
+            git pull --rebase
+            git push
+          fi
