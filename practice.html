@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>老師沒有說不能Open Book</title>
+    <link rel="icon" type="image/jpeg" href="./weareone.jpg">
+    <style>
+        /* 質感黑化底色，防拷貝防選取 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; padding: 0; background-color: #121212; color: #ffffff; 
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        /* 區塊 1: 頂部固定雙層選單區 */
+        .top-navbar {
+            background-color: #1a1a1a; padding: 12px; box-sizing: border-box;
+            border-bottom: 1px solid #282828; display: flex; flex-direction: column;
+        }
+        
+        /* 雙層列容器 */
+        .navbar-row {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+        }
+        
+        /* 讓下拉選單在第二行直接吃滿 100% 寬度 */
+        select {
+            width: 100%; padding: 10px; font-size: 14px; border-radius: 6px;
+            background-color: #252525; color: #fff; border: 1px solid #383838; box-sizing: border-box;
+        }
+        
+        /* 第一行左邊的搜尋框 */
+        .search-input {
+            flex: 1; padding: 10px; font-size: 14px; border-radius: 6px;
+            background-color: #252525; color: #fff; border: 1px solid #383838; box-sizing: border-box;
+        }
+        
+        /* 第一行右邊的公告按鈕 */
+        .notice-btn {
+            width: 45px; background-color: #333333; color: #b3b3b3; border: none; border-radius: 6px;
+            padding: 10px 0; font-size: 14px; cursor: pointer; text-align: center; box-sizing: border-box;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .notice-btn:active { background-color: #444; }
+
+        /* 區塊 2: YouTube 影片區 */
+        .video-section {
+            padding: 4px 12px 4px 12px; box-sizing: border-box; background-color: #121212;
+        }
+        .video-container { 
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; 
+            border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.6); background: #000;
+        }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        /* 區塊 3: 下方歌詞獨立滾動區 */
+        .lyrics-section {
+            flex: 1; overflow-y: auto; padding: 6px 14px 150px 14px; box-sizing: border-box;
+            background: linear-gradient(to bottom, #151515, #121212);
+        }
+        .line { margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #1c1c1c; text-align: left; }
+        .kr { font-size: 14px; color: #aaaaaa; line-height: 1.4; }
+        .pron { font-size: 18px; color: #00ffcc; font-weight: bold; margin-top: 4px; letter-spacing: 0.3px; }
+        .loading { font-size: 16px; color: #777; text-align: center; margin-top: 60px; }
+
+        .search-results-list {
+            display: none; 
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #282828;
+            max-height: 250px; 
+            overflow-y: auto;
+            padding: 6px 12px;
+            box-sizing: border-box;
+            text-align: left; 
+        }
+
+        .search-item {
+            padding: 14px 8px; 
+            font-size: 15px;
+            color: #e0e0e0;
+            border-bottom: 1px solid #252525;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-item:active {
+            background-color: #252525;
+            color: #00ffcc;
+        }
+
+        .search-lyric-tip {
+            font-size: 12px;
+            color: #888;
+            margin-left: 8px;
+            background: #252525;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* 公告彈出視窗 */
+        .modal {
+            display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: #222; margin: 0 25px; padding: 20px; border-radius: 12px;
+            border: 1px solid #333; text-align: left; max-width: 400px; width: 100%;
+            box-sizing: border-box;
+        }
+        .modal-title { font-size: 16px; font-weight: bold; color: #00ffcc; margin-bottom: 10px; }
+        
+        /* 🌟 方案 C 新增：優化公告文字排版，支援網址自動斷行 */
+        .modal-text { 
+            font-size: 14px; 
+            color: #e0e0e0; 
+            line-height: 1.6; 
+            white-space: pre-wrap; 
+            margin-bottom: 15px; 
+            word-break: break-all; /* 防止長網址直接衝出框外 */
+        }
+        
+        /* 🌟 方案 C 新增：公告內超連結的亮眼樣式 */
+        .modal-text a {
+            color: #00ffcc;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .modal-text a:hover {
+            color: #ffffff;
+        }
+
+        .modal-close {
+            background-color: #333; color: #fff; border: none; border-radius: 6px;
+            padding: 8px 0; width: 100%; font-size: 14px; font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="top-navbar">
+        <div class="navbar-row">
+            <input type="text" id="songSearch" class="search-input" placeholder="輸入關鍵字(歌名/歌詞/標題)" oninput="filterSongs()">
+            <button class="notice-btn" onclick="openModal()">📢</button>
+        </div>
+        <div class="navbar-row" style="margin-top: 8px;">
+            <select id="songSelector" onchange="displaySongLyrics()" style="display:none;"></select>
+        </div>
+    </div>
+
+    <div id="searchList" class="search-results-list"></div>
+
+    <div class="video-section" id="playerContainer" style="display:none;">
+        <div class="video-container">
+            <iframe id="youtubePlayer" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="lyrics-section" id="lyricsBox">
+        <div class="loading" id="statusMessage">正在同步資料庫歌詞，請稍候...</div>
+    </div>
+
+    <div id="noticeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">📢 應援最新公告</div>
+            <div id="announcementBody" class="modal-text">讀取中...</div>
+            <button class="modal-close" onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        var allSongsData = [];
+
+        window.onload = function() {
+            fetch('./data2.json')
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    allSongsData = result.songs;
+                    
+                    // 🌟 方案 C 核心修正：將純文字轉換為內含可點擊超連結的 HTML
+                    if (result.announcement) {
+                        document.getElementById("announcementBody").innerHTML = linkify(result.announcement);
+                    } else {
+                        document.getElementById("announcementBody").innerText = "目前沒有新公告。";
+                    }
+                    
+                    if (!allSongsData || allSongsData.length === 0) {
+                        document.getElementById("statusMessage").innerText = "資料庫裡好像沒有歌曲喔！";
+                        return;
+                    }
+                    initDropdown(allSongsData);
+                    if (allSongsData.length > 0) { displaySongLyrics(); }
+                })
+                .catch(function(err) {
+                    document.getElementById("statusMessage").innerText = "讀取資料庫失敗。";
+                });
+        };
+
+        // 🌟 方案 C 的靈魂黑魔法：利用 Regex 正規表示式自動偵測文字中的網址，並包裝成 a 標籤
+        function linkify(inputText) {
+            if (!inputText) return "";
+            
+            // 處理 HTML 安全字元，防止粉絲在後台惡意塞入 HTML 程式碼導致網頁壞掉 (XSS 防禦)
+            var safeText = inputText
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // 辨識 http:// 或 https:// 開頭的網址
+            var replacePattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+            
+            // 將網址替換為新視窗開啟 (_blank) 的超連結標籤
+            return safeText.replace(replacePattern, '<a href="$1" target="_blank">$1</a>');
+        }
+
+        function initDropdown(songsToDisplay) {
+            var selector = document.getElementById("songSelector");
+            selector.innerHTML = "";
+            for (var i = 0; i < allSongsData.length; i++) {
+                var song = allSongsData[i];
+                if (songsToDisplay.indexOf(song) !== -1) {
+                    var opt = document.createElement("option");
+                    opt.value = i; opt.innerText = song.name; selector.appendChild(opt);
+                }
+            }
+            selector.style.display = "block";
+            document.getElementById("playerContainer").style.display = "block";
+        }
+
+        function filterSongs() {
+            var keyword = document.getElementById("songSearch").value.toLowerCase().trim();
+            var searchList = document.getElementById("searchList");
+            
+            if (keyword === "") { 
+                searchList.style.display = "none"; 
+                searchList.innerHTML = "";
+                initDropdown(allSongsData); 
+                return; 
+            }
+            
+            searchList.innerHTML = ""; 
+            var titleMatches = []; 
+            var lyricMatches = []; 
+            
+            for (var i = 0; i < allSongsData.length; i++) {
+                var song = allSongsData[i];
+                if (song.name.toLowerCase().indexOf(keyword) !== -1) {
+                    titleMatches.push({ index: i, song: song, type: 'title' });
+                    continue; 
+                }
+                if (song.lyrics) {
+                    var isLyricMatch = false;
+                    for (var j = 0; j < song.lyrics.length; j++) {
+                        var line = song.lyrics[j];
+                        if ((line.kr && line.kr.toLowerCase().indexOf(keyword) !== -1) || 
+                            (line.pron && line.pron.toLowerCase().indexOf(keyword) !== -1)) {
+                            isLyricMatch = true; 
+                            break; 
+                        }
+                    }
+                    if (isLyricMatch) {
+                        lyricMatches.push({ index: i, song: song, type: 'lyric' });
+                    }
+                }
+            }
+            
+            var finalResults = titleMatches.concat(lyricMatches);
+            var filteredSongs = finalResults.map(function(item) { return item.song; });
+            initDropdown(filteredSongs);
+            
+            if (finalResults.length > 0) {
+                for (var k = 0; k < finalResults.length; k++) {
+                    var result = finalResults[k];
+                    var itemDiv = document.createElement("div");
+                    itemDiv.className = "search-item";
+                    
+                    if (result.type === 'title') {
+                        itemDiv.innerText = result.song.name;
+                    } else {
+                        itemDiv.innerHTML = '<span>' + result.song.name + '</span><span class="search-lyric-tip">🎤 歌詞包含 "' + keyword + '"</span>';
+                    }
+                    
+                    (function(actualIndex) {
+                        itemDiv.onclick = function() {
+                            document.getElementById("songSelector").value = actualIndex;
+                            displaySongLyrics();     
+                            searchList.style.display = "none"; 
+                            document.getElementById("songSearch").value = ""; 
+                        };
+                    })(result.index);
+                    
+                    searchList.appendChild(itemDiv);
+                }
+                searchList.style.display = "block"; 
+            } else {
+                searchList.innerHTML = '<div class="search-item" style="color:#777; pointer-events:none; justify-content:center;">找不到這首歌 QQ</div>';
+                searchList.style.display = "block";
+            }
+        }
+
+        function displaySongLyrics() {
+            var selectedIndex = document.getElementById("songSelector").value;
+            var song = allSongsData[selectedIndex];
+            document.getElementById("youtubePlayer").src = "https://www.youtube.com/embed/" + song.youtubeId;
+            var lyricsBox = document.getElementById("lyricsBox");
+            lyricsBox.innerHTML = ""; 
+            if (!song.lyrics || song.lyrics.length === 0) { lyricsBox.innerHTML = '<div class="loading">這首歌還沒建立歌詞內容。</div>'; return; }
+            for (var j = 0; j < song.lyrics.length; j++) {
+                var item = song.lyrics[j];
+                var lineDiv = document.createElement("div");
+                lineDiv.className = "line";
+                lineDiv.innerHTML = '<div class="kr">' + item.kr + '</div><div class="pron">' + item.pron + '</div>';
+                lyricsBox.appendChild(lineDiv);
+            }
+            lyricsBox.scrollTop = 0;
+        }
+
+        function openModal() { document.getElementById("noticeModal").style.display = "flex"; }
+        function closeModal() { document.getElementById("noticeModal").style.display = "none"; }
+    </script>
+</body>
+</html>
