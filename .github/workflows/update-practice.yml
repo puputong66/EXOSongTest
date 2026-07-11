@@ -1,0 +1,29 @@
+name: 每日定時更新「練習頁」歌詞快取
+on:
+  schedule:
+    # 🌟 故意錯開 10 分鐘,避免跟舊 workflow 同時 push 撞在一起
+    - cron: '10 4,16 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  update-practice-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 檢查專案程式碼
+        uses: actions/checkout@v4
+
+      - name: 向「練習頁」的 Apps Script 抓取歌詞
+        run: |
+          # 🌟 換成上一步新部署拿到的那組 exec 網址
+          curl -L "https://script.google.com/macros/s/新的部署ID/exec" -o data2.json
+
+      - name: 檢查資料是否有變動並自動推送
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git pull --rebase
+          git add data2.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 自動更新練習頁歌詞快取" && git push)
