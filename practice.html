@@ -45,6 +45,23 @@
         }
         .notice-btn:active { background-color: #444; }
 
+        /* 🌟 新增：考試用按鈕(薄荷綠，比照韓文歌詞配色 #00ffcc) */
+        .exam-link {
+            background-color: #00ffcc;
+            color: #121212;              /* 深色文字，在薄荷綠底上最清楚 */
+            border: none;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;        /* 拿掉超連結底線 */
+            white-space: nowrap;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        .exam-link:active { background-color: #00d9ad; }
+
         /* 區塊 2: YouTube 影片區 */
         .video-section {
             padding: 4px 12px 4px 12px; box-sizing: border-box; background-color: #121212;
@@ -65,7 +82,7 @@
         .pron { font-size: 18px; color: #00ffcc; font-weight: bold; margin-top: 4px; letter-spacing: 0.3px; }
         .loading { font-size: 16px; color: #777; text-align: center; margin-top: 60px; }
 
-        /* 🌟 新增：空耳裡的【應援詞】突顯樣式 */
+        /* 🌟 空耳裡的【應援詞】突顯樣式 */
         .cheer {
             color: #ff4d6d;      /* 應援詞顏色，先給一個亮粉紅，可自行更換 */
             font-weight: bold;
@@ -150,6 +167,8 @@
     <div class="top-navbar">
         <div class="navbar-row">
             <input type="text" id="songSearch" class="search-input" placeholder="輸入關鍵字(歌名/歌詞/標題)" oninput="filterSongs()">
+            <!-- 🌟 新增：考試用按鈕，點擊跳到首頁 -->
+            <a href="https://alll-lll-s.com/" class="exam-link">考試用</a>
             <button class="notice-btn" onclick="openModal()">📢</button>
         </div>
         <div class="navbar-row" style="margin-top: 8px;">
@@ -222,7 +241,7 @@
             return safeText.replace(replacePattern, '<a href="$1" target="_blank">$1</a>');
         }
 
-        // 🌟 新增：把空耳裡的【應援詞】上色突顯
+        // 🌟 把空耳裡的【應援詞】上色突顯
         function highlightCheer(text) {
             if (!text) return "";
 
@@ -332,7 +351,7 @@
                 var item = song.lyrics[j];
                 var lineDiv = document.createElement("div");
                 lineDiv.className = "line";
-                // 🌟 空耳歌詞改用 highlightCheer 處理，讓【應援詞】上色突顯
+                // 🌟 空耳歌詞用 highlightCheer 處理，讓【應援詞】上色突顯
                 lineDiv.innerHTML = '<div class="kr">' + item.kr + '</div><div class="pron">' + highlightCheer(item.pron) + '</div>';
                 lyricsBox.appendChild(lineDiv);
             }
